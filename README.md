@@ -60,6 +60,26 @@ design-reference/       # mockup original ("House of Pochi") usado como
                          # referencia visual del front público
 ```
 
+## Deploy en Coolify (u otra plataforma basada en Docker Compose)
+
+Coolify usa el `docker-compose.yml` como única fuente de verdad: no basta con
+subir `.env` al repo, hay que cargar los valores en la UI de Coolify.
+
+1. En el recurso de la app dentro de Coolify, andá a la pestaña
+   **Environment Variables**. Coolify detecta automáticamente las variables
+   declaradas en `docker-compose.yml` (`POSTGRES_USER`, `POSTGRES_PASSWORD`,
+   `POSTGRES_DB`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `SESSION_SECRET`) y las
+   muestra ahí para completar. Si alguna te aparece vacía, el deploy va a
+   fallar (están marcadas como requeridas con `:?` para que el error sea
+   explícito en vez de un contenedor "unhealthy" silencioso).
+2. Completá todas con valores reales y volvé a deployar.
+
+Si el healthcheck de `db` sigue fallando después de esto, revisá los logs
+del contenedor `db` en Coolify — probablemente indique la causa puntual
+(credenciales, o el volumen de datos quedó en un estado inconsistente de un
+intento anterior; en ese caso borrar el volumen `..._db-data` desde Coolify
+y volver a deployar limpia el estado).
+
 ## Desarrollo local sin Docker (opcional)
 
 ```bash
