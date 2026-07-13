@@ -1,0 +1,101 @@
+.admin-shell {
+  min-height: 100vh;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.admin-nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--color-divider);
+  flex-wrap: wrap;
+}
+
+.admin-nav nav {
+  display: flex;
+  gap: 16px;
+  flex: 1;
+}
+
+.admin-nav nav a {
+  font-size: 14px;
+  opacity: 0.85;
+  text-decoration: none;
+}
+.admin-nav nav a:hover {
+  opacity: 1;
+}
+
+.admin-brand {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.admin-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+}
+
+.admin-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.admin-page h1 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.admin-table th,
+.admin-table td {
+  text-align: left;
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--color-divider);
+}
+.admin-table th {
+  opacity: 0.6;
+  font-weight: 500;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.status-pill {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.status-pill.is-released {
+  background: var(--color-accent);
+  color: var(--color-text);
+}
+.status-pill.is-hidden {
+  border: 1px solid var(--color-divider);
+  opacity: 0.7;
+}
+
+.admin-form {
+  max-width: 520px;
+}

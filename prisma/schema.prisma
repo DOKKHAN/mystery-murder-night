@@ -1,0 +1,78 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Una "partida": agrupa invitados y pistas para no mezclar datos entre eventos.
+model GameSession {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  guests Guest[]
+  clues  Clue[]
+
+  @@map("game_sessions")
+}
+
+model Guest {
+  id            String      @id @default(cuid())
+  gameSessionId String
+  gameSession   GameSession @relation(fields: [gameSessionId], references: [id], onDelete: Cascade)
+
+  /// Identificador único usado en la URL personal del invitado (/g/[slug]).
+  slug String @unique
+  name String
+
+  /// Rol o personaje del invitado.
+  roleName String?
+
+  /// Descripción pública del invitado/personaje.
+  publicDescription String?
+
+  /// Información secreta, visible solo para este invitado en su vista personal.
+  secretInfo String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([gameSessionId])
+  @@map("guests")
+}
+
+enum ClueStatus {
+  HIDDEN
+  RELEASED
+}
+
+model Clue {
+  id            String      @id @default(cuid())
+  gameSessionId String
+  gameSession   GameSession @relation(fields: [gameSessionId], references: [id], onDelete: Cascade)
+
+  title   String
+  content String
+
+  /// URL de una imagen opcional para la pista.
+  imageUrl String?
+
+  /// Orden sugerido de liberación.
+  order Int @default(0)
+
+  status     ClueStatus @default(HIDDEN)
+  releasedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([gameSessionId])
+  @@map("clues")
+}

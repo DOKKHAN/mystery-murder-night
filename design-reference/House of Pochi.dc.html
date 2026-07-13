@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="_ds/industry-e5cc7d72-ff3b-4121-a6ad-0750be63c048/styles.css">
+  <script src="_ds/industry-e5cc7d72-ff3b-4121-a6ad-0750be63c048/_ds_bundle.js"></script>
+  <script src="./image-slot.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,600&display=swap');
+    @keyframes hopStampIn { 0%{opacity:0; transform:scale(1.7) rotate(-20deg);} 55%{opacity:1; transform:scale(0.92) rotate(-7deg);} 100%{opacity:1; transform:scale(1) rotate(-6deg);} }
+    @keyframes hopFadeUp { from{opacity:0; transform:translateY(16px);} to{opacity:1; transform:translateY(0);} }
+    @keyframes hopFlicker { 0%,100%{opacity:1;} 44%{opacity:.35;} 50%{opacity:.9;} 56%{opacity:.25;} 62%{opacity:1;} }
+    @keyframes hopGlow { 0%,100%{opacity:.5;} 50%{opacity:1;} }
+    @keyframes hopSpin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+    @keyframes hopPulse { 0%,100%{opacity:.6; transform:scale(1);} 50%{opacity:1; transform:scale(1.25);} }
+    body { margin:0; }
+  </style>
+</helmet>
+<div style="--color-bg:#0b0809; --color-surface:#171113; --color-text:#f3e8dd; --color-accent:#b21230; --color-accent-2:#b21230; --color-accent-600:#8f0f27; --color-accent-700:#730c1f; --color-accent-100:#2a0d12; --color-accent-800:#f2c9cf; --color-accent-900:#160607; --color-divider:color-mix(in srgb, #f3e8dd 18%, transparent); --font-display:'Playfair Display', 'Barlow Condensed', serif; --hop-wine:#4a0d18; --hop-crimson:#b21230; --hop-cream:#f3e8dd; background:var(--color-bg); color:var(--color-text); min-height:100vh; font-family:var(--font-body); position:relative;">
+
+  <div style="position:fixed; inset:0; pointer-events:none; z-index:0; background:radial-gradient(circle at 82% 8%, color-mix(in srgb, var(--hop-crimson) 22%, transparent), transparent 45%), radial-gradient(circle at 10% 95%, color-mix(in srgb, var(--hop-crimson) 14%, transparent), transparent 40%), repeating-linear-gradient(0deg, color-mix(in srgb, var(--color-text) 3%, transparent) 0px, transparent 1px 3px);"></div>
+
+  <sc-if value="{{ isHost }}" hint-placeholder-val="{{ false }}">
+    <div style="position:relative; z-index:1; max-width:480px; margin:0 auto; min-height:100vh; padding:24px 20px 60px; display:flex; flex-direction:column; gap:22px;">
+      <div>
+        <div style="font-family:var(--font-heading); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--color-accent-800);">Solo anfitriona</div>
+        <h1 style="font-family:var(--font-display); font-weight:700; font-size:34px; margin:4px 0 0; letter-spacing:-0.01em;">Backoffice</h1>
+        <div style="font-size:13px; opacity:.65; margin-top:2px;">House of Pochi — control del expediente</div>
+      </div>
+
+      <div class="card blueprint elev-md" style="border-color:var(--color-divider); padding:18px; display:flex; flex-direction:column; gap:10px;">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="card-kicker">Evidencia</div>
+        <div style="font-family:var(--font-display); font-size:22px; font-weight:700;">{{ evidenceCount }} / {{ maxEvidence }} pistas liberadas</div>
+        <div style="display:flex; gap:10px; margin-top:6px;">
+          <button class="btn btn-primary" style="flex:1;" onClick="{{ releaseEvidence }}" disabled="{{ evidenceAtMax }}">Liberar pista</button>
+          <button class="btn btn-secondary" style="flex:1;" onClick="{{ retractEvidence }}" disabled="{{ evidenceAtMin }}">Retirar</button>
+        </div>
+      </div>
+
+      <div class="card blueprint elev-md" style="border-color:var(--color-divider); padding:18px; display:flex; flex-direction:column; gap:10px;">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="card-kicker">Revelación final</div>
+        <div style="font-size:13px; opacity:.75;">El botón de revelación solo aparece habilitado en el celular de las y los invitados cuando lo activas aquí.</div>
+        <button class="btn" style="margin-top:4px; background:{{ revealBtnBg }}; color:{{ revealBtnColor }}; border-color:var(--color-accent);" onClick="{{ toggleReveal }}">{{ revealBtnLabel }}</button>
+      </div>
+
+      <div class="card blueprint elev-md" style="border-color:var(--color-divider); padding:18px; display:flex; flex-direction:column; gap:10px;">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="card-kicker">Resumen (para quien llega tarde)</div>
+        <textarea class="input" style="min-height:110px;" value="{{ summaryText }}" onChange="{{ onSummaryChange }}" placeholder="Escribe aquí el resumen que verán los invitados al tocar 'Resumen'."></textarea>
+      </div>
+
+      <div class="card blueprint elev-md" style="border-color:var(--color-divider); padding:18px; display:flex; flex-direction:column; gap:12px;">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="card-kicker">Horario de referencia</div>
+        <div class="field"><label>Inicio de la fiesta</label><input class="input" value="{{ schedule.start }}" onChange="{{ scheduleHandlers.start }}"></div>
+        <div class="field"><label>Gerard no llegó</label><input class="input" value="{{ schedule.t1 }}" onChange="{{ scheduleHandlers.t1 }}"></div>
+        <div class="field"><label>Primera evidencia</label><input class="input" value="{{ schedule.t2 }}" onChange="{{ scheduleHandlers.t2 }}"></div>
+        <div class="field"><label>Votación</label><input class="input" value="{{ schedule.t3 }}" onChange="{{ scheduleHandlers.t3 }}"></div>
+        <div class="field"><label>Revelación</label><input class="input" value="{{ schedule.t4 }}" onChange="{{ scheduleHandlers.t4 }}"></div>
+      </div>
+
+      <div class="card blueprint elev-md" style="border-color:var(--color-divider); padding:18px; display:flex; flex-direction:column; gap:10px;">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="card-kicker">Acceso</div>
+        <div style="font-size:12px; opacity:.7;">Comparte este link (o su QR impreso) con las y los invitados. Puedes agregar ?name=NOMBRE al final para personalizar el perfil de cada persona.</div>
+        <div style="font-family:monospace; font-size:12px; padding:10px; background:var(--color-surface); border:1px solid var(--color-divider); word-break:break-all;">{{ guestLink }}</div>
+        <a href="{{ guestLink }}" style="font-size:13px; color:var(--color-accent-800); text-align:center; margin-top:4px;">Vista de invitado →</a>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isGuest }}" hint-placeholder-val="{{ true }}">
+    <div style="position:relative; z-index:1; max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column;">
+
+      <sc-if value="{{ entered }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 20px 4px;">
+          <div style="font-family:var(--font-heading); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:color-mix(in srgb, var(--color-text) 62%, transparent);">House of Pochi · {{ editionLabel }}</div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <button onClick="{{ toggleSummary }}" style="background:none; border:none; font-family:var(--font-heading); font-size:12px; letter-spacing:.06em; color:var(--color-accent-800); cursor:pointer; padding:0;">Resumen</button>
+            <button onClick="{{ refresh }}" style="display:flex; align-items:center; gap:6px; background:transparent; border:1px solid var(--color-divider); color:var(--color-text); font-family:var(--font-heading); font-size:11px; letter-spacing:.05em; padding:6px 10px; cursor:pointer;">
+              <span style="display:inline-block; {{ refreshSpinStyle }}">↻</span> Actualizar
+            </button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ !entered }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px 28px; gap:22px;">
+          <div style="font-family:var(--font-heading); font-size:12px; letter-spacing:.2em; text-transform:uppercase; opacity:.7;">Top Secret</div>
+          <div style="display:inline-flex; align-items:center; justify-content:center; border:3px solid var(--color-accent); color:var(--color-accent); font-family:var(--font-heading); font-weight:600; font-size:15px; letter-spacing:.12em; padding:10px 22px; transform:rotate(-6deg); animation:hopStampIn .6s ease-out;">CONFIDENCIAL</div>
+          <h1 style="font-family:var(--font-display); font-weight:700; font-size:32px; line-height:1.1; margin:6px 0 0;">Bienvenida,<br>{{ guestName }}</h1>
+          <p style="font-size:14px; opacity:.75; max-width:300px; margin:0;">Tu perfil ya está listo en el expediente. Esta noche, nada es lo que parece.</p>
+          <button class="btn btn-primary" style="width:100%; max-width:280px; padding:16px; font-size:15px; margin-top:8px;" onClick="{{ enterSite }}">Entrar al expediente</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ entered }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1; display:flex; flex-direction:column; padding:6px 22px 60px; gap:22px;">
+
+          <div class="card blueprint elev-md" style="border-color:var(--color-divider); background:var(--color-surface); padding:18px; display:flex; flex-direction:column; gap:8px; animation:hopFadeUp .5s ease-out;">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div class="card-kicker">Perfil confidencial</div>
+            <h1 style="font-family:var(--font-display); font-weight:800; font-size:30px; margin:0;">{{ guestName }}</h1>
+            <div style="display:inline-block; align-self:flex-start; white-space:nowrap; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--color-accent-800); border:1px solid var(--color-accent-800); padding:3px 9px; margin-top:2px;">{{ guestRole }}</div>
+            <p style="font-size:14px; opacity:.82; margin:8px 0 0;">{{ guestDetail }}</p>
+            <p style="font-size:12px; font-style:italic; opacity:.55; margin:6px 0 0;">Tu rol es confidencial. No lo compartas con nadie... todavía.</p>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:14px; padding:14px 16px; border:1px solid var(--color-divider); animation:hopFadeUp .5s ease-out;">
+            <div style="border:2px solid var(--color-accent); color:var(--color-accent); font-family:var(--font-heading); font-weight:600; font-size:11px; letter-spacing:.08em; padding:5px 10px; transform:rotate(-5deg); flex:none;">ALERTA</div>
+            <div>
+              <div style="font-family:var(--font-display); font-weight:700; font-size:17px;">Gerard nunca llegó.</div>
+              <div style="font-size:12px; opacity:.65; margin-top:2px;">Estaba confirmado. El lugar donde debía estar sigue vacío.</div>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:14px;">
+            <div>
+              <div style="font-family:var(--font-heading); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--color-accent-800);">A medida que avanza la noche</div>
+              <h2 style="font-family:var(--font-display); font-weight:800; font-size:24px; margin:4px 0 0;">Pistas del expediente</h2>
+            </div>
+
+            <sc-if value="{{ evidenceCount === 0 }}" hint-placeholder-val="{{ false }}">
+              <p style="font-size:13px; opacity:.6; font-style:italic; margin:0;">Aún no hay pistas liberadas. Toca "Actualizar" más tarde.</p>
+            </sc-if>
+
+            <sc-for list="{{ evidenceUnlockedList }}" as="ev" hint-placeholder-count="2">
+              <button onClick="{{ ev.onOpen }}" class="card blueprint elev-sm" style="border-color:var(--color-divider); text-align:left; cursor:pointer; background:var(--color-surface); display:flex; flex-direction:row; gap:12px; padding:12px; position:relative; animation:hopFadeUp .4s ease-out;">
+                <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                <sc-if value="{{ ev.isNew }}" hint-placeholder-val="{{ false }}">
+                  <span style="position:absolute; top:-9px; right:8px; font-size:9px; letter-spacing:.06em; text-transform:uppercase; background:var(--color-accent); color:var(--color-bg); padding:2px 7px; animation:hopPulse 1.4s ease-in-out infinite;">Nueva</span>
+                </sc-if>
+                <div style="width:72px; height:72px; flex:none;" class="blueprint duotone">
+                  <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                  <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="{{ ev.slotId }}" shape="rect" placeholder="Foto" hint-size="72px,72px"></x-import>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px; min-width:0;">
+                  <div style="display:flex; gap:8px; align-items:center;">
+                    <span class="card-kicker" style="margin:0;">{{ ev.kicker }}</span>
+                    <span style="font-size:10px; letter-spacing:.05em; text-transform:uppercase; color:var(--color-accent-800); border:1px solid var(--color-accent-800); padding:1px 6px;">{{ ev.tag }}</span>
+                  </div>
+                  <div class="card-title" style="font-size:16px;">{{ ev.title }}</div>
+                  <div style="font-size:12px; opacity:.65;">{{ ev.teaser }}</div>
+                </div>
+              </button>
+            </sc-for>
+          </div>
+
+          <div class="card blueprint elev-md" style="border-color:var(--color-divider); padding:18px; display:flex; flex-direction:column; gap:12px; text-align:center; align-items:center; animation:hopFadeUp .5s ease-out;">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <h2 style="font-family:var(--font-display); font-weight:800; font-size:22px; margin:0;">¿Quién lo hizo?</h2>
+            <sc-if value="{{ !voteSent }}" hint-placeholder-val="{{ true }}">
+              <textarea class="input" style="min-height:80px;" placeholder="Escribe aquí tu sospecha..." value="{{ voteDraft }}" onChange="{{ onVoteDraftChange }}"></textarea>
+              <button class="btn btn-primary btn-block" style="margin-top:0;" onClick="{{ sendVote }}" disabled="{{ voteDraftEmpty }}">Yo sé quién lo mató</button>
+            </sc-if>
+            <sc-if value="{{ voteSent }}" hint-placeholder-val="{{ false }}">
+              <div style="display:inline-flex; border:3px solid var(--color-accent); color:var(--color-accent); font-family:var(--font-heading); font-weight:600; font-size:12px; letter-spacing:.1em; padding:7px 14px; transform:rotate(-5deg); animation:hopStampIn .55s ease-out;">SOSPECHA REGISTRADA</div>
+              <p style="font-size:13px; opacity:.7; margin:0;">"{{ voteDraft }}"</p>
+            </sc-if>
+          </div>
+
+          <div style="display:flex; flex-direction:column; align-items:center; gap:10px; padding-top:6px;">
+            <sc-if value="{{ !revealEnabled }}" hint-placeholder-val="{{ true }}">
+              <div style="font-size:12px; opacity:.5; font-style:italic; text-align:center;">El expediente final se abrirá cuando la fiesta lo decida.</div>
+            </sc-if>
+            <sc-if value="{{ revealEnabled && !revealedOpen }}" hint-placeholder-val="{{ false }}">
+              <button class="btn btn-primary btn-block" style="max-width:320px; padding:18px; font-size:15px; animation:hopPulse 1.8s ease-in-out infinite;" onClick="{{ openReveal }}">Ver la revelación final</button>
+            </sc-if>
+
+            <sc-if value="{{ revealedOpen && revealVariant === 'editorial' }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; align-items:center; text-align:center; gap:14px; padding:24px 4px; width:100%; animation:hopFadeUp .5s ease-out;">
+                <div style="display:inline-flex; border:3px solid var(--color-accent); color:var(--color-accent); font-family:var(--font-heading); font-weight:600; font-size:13px; letter-spacing:.12em; padding:8px 18px; transform:rotate(-6deg); animation:hopStampIn .6s ease-out;">CASO CERRADO</div>
+                <h1 style="font-family:var(--font-display); font-weight:900; font-size:40px; line-height:1.02; margin:2px 0;">FRANCISCA</h1>
+                <div style="font-family:var(--font-heading); font-size:16px; letter-spacing:.1em; text-transform:uppercase; color:var(--color-accent-800); border-top:1px solid var(--color-divider); border-bottom:1px solid var(--color-divider); padding:8px 0; width:100%;">The Last Vampire</div>
+                <div style="width:100%; aspect-ratio:1/1; max-width:320px;" class="blueprint duotone">
+                  <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                  <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="reveal-portrait" shape="rect" placeholder="Retrato de Francisca" hint-size="100%,100%"></x-import>
+                </div>
+                <p style="font-size:15px; opacity:.85; max-width:300px; margin:0;">Gerard nunca desapareció. Francisca le succionó todo — su brillo, su carisma, su lugar en el escenario.</p>
+                <p style="font-family:var(--font-display); font-style:italic; font-size:16px; opacity:.85; margin:6px 0 0;">End of issue. Begin the afterparty.</p>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ revealedOpen && revealVariant === 'cinematic' }}" hint-placeholder-val="{{ false }}">
+              <div style="position:relative; width:100%; min-height:420px; display:flex; align-items:flex-end; justify-content:center; overflow:hidden; animation:hopFadeUp .5s ease-out;">
+                <div style="position:absolute; inset:0; z-index:0;" class="duotone">
+                  <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="reveal-portrait-cine" shape="rect" placeholder="Retrato de Francisca" hint-size="100%,100%"></x-import>
+                </div>
+                <div style="position:absolute; inset:0; z-index:1; background:linear-gradient(180deg, color-mix(in srgb, var(--color-bg) 30%, transparent) 0%, var(--color-bg) 88%);"></div>
+                <div style="position:relative; z-index:2; padding:0 20px 32px; display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center;">
+                  <h1 style="font-family:var(--font-display); font-weight:900; font-size:32px; line-height:1.05; text-transform:uppercase; margin:0; animation:hopFlicker 2.4s ease-in-out infinite;">Francisca<br>The Last Vampire</h1>
+                  <div style="width:60px; height:1px; background:var(--color-accent);"></div>
+                  <p style="font-size:14px; opacity:.85; max-width:300px; margin:0;">Gerard nunca desapareció. Francisca le succionó todo.</p>
+                  <p style="font-family:var(--font-display); font-style:italic; font-size:15px; opacity:.85; margin:4px 0 0;">End of issue. Begin the afterparty.</p>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+
+        </div>
+      </sc-if>
+    </div>
+
+    <sc-if value="{{ showSummary }}" hint-placeholder-val="{{ false }}">
+      <div class="dialog-backdrop" style="z-index:10;">
+        <div class="dialog blueprint" style="background:var(--color-surface); border:1px solid var(--color-divider);">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div class="card-kicker">Para quien llegó tarde</div>
+          <div class="dialog-title" style="font-family:var(--font-display);">Resumen del expediente</div>
+          <div class="dialog-body" style="white-space:pre-wrap;">{{ summaryText }}</div>
+          <div class="dialog-actions">
+            <button class="btn btn-primary" onClick="{{ toggleSummary }}">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ activeEvidence }}" hint-placeholder-val="{{ false }}">
+      <div class="dialog-backdrop" style="z-index:10;">
+        <div class="dialog blueprint" style="background:var(--color-surface); border:1px solid var(--color-divider);">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <span class="card-kicker" style="margin:0;">{{ activeEvidence.kicker }}</span>
+            <span style="font-size:10px; letter-spacing:.05em; text-transform:uppercase; color:var(--color-accent-800); border:1px solid var(--color-accent-800); padding:1px 6px;">{{ activeEvidence.tag }}</span>
+          </div>
+          <div class="dialog-title" style="font-family:var(--font-display);">{{ activeEvidence.title }}</div>
+          <div style="width:100%; aspect-ratio:4/3;" class="blueprint duotone">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="{{ activeEvidence.slotIdBig }}" shape="rect" placeholder="Foto de la evidencia" hint-size="100%,100%"></x-import>
+          </div>
+          <div class="dialog-body">{{ activeEvidence.body }}</div>
+          <div class="dialog-actions">
+            <button class="btn btn-secondary" onClick="{{ closeEvidence }}">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:420,&quot;height&quot;:860},&quot;editionLabel&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Vol. I — Edición Limitada&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;revealStyle&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;cinematic&quot;,&quot;options&quot;:[&quot;editorial&quot;,&quot;cinematic&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Revelación final&quot;}}">
+const EVIDENCE = [
+  { id:'ev1', num:'01', title:'El QR perdido', tag:'Digital', teaser:'Pegado bajo una silla del quincho. Alguien lo escaneó.', body:'Un código QR apareció pegado bajo una silla del quincho. Nadie sabe quién lo dejó ahí. Alguien lo escaneó — llevaba a una foto borrosa de Gerard entrando al edificio, minutos antes de que empezara la fiesta.', slotId:'ev-thumb-1', slotIdBig:'ev-big-1' },
+  { id:'ev2', num:'02', title:'La invitación rota', tag:'Física', teaser:'Encontrada partida en dos, cerca del bar.', body:'La invitación con el nombre de Gerard fue encontrada rota en dos mitades cerca del bar. El borde de una de las mitades está manchado de algo rojo oscuro. Podría ser vino.', slotId:'ev-thumb-2', slotIdBig:'ev-big-2' },
+  { id:'ev3', num:'03', title:'El mensaje sin enviar', tag:'Digital', teaser:'A medio escribir en el teléfono de Gerard.', body:'"Fran, necesito hablar cont..." — así quedó el mensaje, a medio escribir, en un teléfono encontrado en el pasillo. Nunca se envió.', slotId:'ev-thumb-3', slotIdBig:'ev-big-3' },
+  { id:'ev4', num:'04', title:'El baúl del quincho', tag:'Física', teaser:'Algo con la ropa de Gerard. No se mueve.', body:'Dentro de un baúl olvidado en el quincho apareció algo vestido con la ropa de Gerard. No se mueve. No respira. El expediente lo llama, por ahora, "el cuerpo".', slotId:'ev-thumb-4', slotIdBig:'ev-big-4' }
+];
+const NTFY_TOPIC = 'house-of-pochi-francisca-vampira-2026';
+const NTFY_URL = 'https://ntfy.sh/' + NTFY_TOPIC;
+const SCHEDULE_KEY = 'hop_schedule';
+const DEFAULT_SCHEDULE = { start:'21:00', t1:'22:00', t2:'22:30', t3:'23:15', t4:'23:45' };
+const DEFAULT_SUMMARY = 'Gerard Way fue anunciado como invitado especial y nunca llegó al salón. Desde entonces han aparecido pistas por todo el quincho. La fiesta sospecha de todos. El expediente sigue abierto.';
+
+class Component extends DCLogic {
+  state = {
+    isHost: false,
+    entered: false,
+    evidenceCount: 0,
+    seenEvidence: 0,
+    voteDraft: '',
+    voteSent: false,
+    revealEnabled: false,
+    revealedOpen: false,
+    showSummary: false,
+    activeEvidenceId: null,
+    refreshing: false,
+    schedule: DEFAULT_SCHEDULE,
+    summaryText: DEFAULT_SUMMARY,
+    guestName: 'Invitada', guestRole: '', guestDetail: ''
+  };
+
+  componentDidMount() {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const isHost = params.get('host') === '1';
+    const evidenceCount = parseInt(localStorage.getItem('hop_evidence') || '0', 10);
+    const seenEvidence = parseInt(localStorage.getItem('hop_seen_evidence_device') || '0', 10);
+    const voteDraft = localStorage.getItem('hop_vote_message_device') || '';
+    const voteSent = localStorage.getItem('hop_voted_device') === '1';
+    const entered = sessionStorage.getItem('hop_entered') === '1';
+    const revealEnabled = localStorage.getItem('hop_reveal_enabled') === '1';
+    const summaryText = localStorage.getItem('hop_summary_text') || DEFAULT_SUMMARY;
+    let schedule = DEFAULT_SCHEDULE;
+    try { schedule = { ...DEFAULT_SCHEDULE, ...JSON.parse(localStorage.getItem(SCHEDULE_KEY) || '{}') }; } catch (e) {}
+    const guestName = params.get('name') || 'Invitada';
+    const guestRole = params.get('role') || 'Testigo del círculo íntimo';
+    const guestDetail = params.get('detail') || 'Estuviste en el quincho toda la noche. Viste algo que nadie más vio — pero todavía no sabes qué significa.';
+    this.setState({ isHost, entered, evidenceCount, seenEvidence, voteDraft, voteSent, revealEnabled, schedule, summaryText, guestName, guestRole, guestDetail });
+
+    this._onStorage = () => {
+      this.setState({
+        evidenceCount: parseInt(localStorage.getItem('hop_evidence') || '0', 10),
+        revealEnabled: localStorage.getItem('hop_reveal_enabled') === '1',
+        summaryText: localStorage.getItem('hop_summary_text') || DEFAULT_SUMMARY
+      });
+    };
+    window.addEventListener('storage', this._onStorage);
+
+    // Cross-device sync via ntfy.sh (no backend/account needed): host publishes
+    // the full state snapshot on every change; guests get it live over SSE,
+    // plus a manual poll on load and on "Actualizar".
+    this._applyRemote = (snap) => {
+      if (!snap || typeof snap !== 'object') return;
+      const next = {};
+      if (typeof snap.evidenceCount === 'number') { next.evidenceCount = snap.evidenceCount; localStorage.setItem('hop_evidence', String(snap.evidenceCount)); }
+      if (typeof snap.revealEnabled === 'boolean') { next.revealEnabled = snap.revealEnabled; localStorage.setItem('hop_reveal_enabled', snap.revealEnabled ? '1' : '0'); }
+      if (typeof snap.summaryText === 'string') { next.summaryText = snap.summaryText; localStorage.setItem('hop_summary_text', snap.summaryText); }
+      this.setState(next);
+    };
+    this.pollRemote = () => {
+      fetch('https://ntfy.sh/' + NTFY_TOPIC + '/json?poll=1&since=all')
+        .then(r => r.text()).then(text => {
+          const lines = text.trim().split('\n').filter(Boolean);
+          if (!lines.length) return;
+          const last = JSON.parse(lines[lines.length - 1]);
+          if (last && last.message) this._applyRemote(JSON.parse(last.message));
+        }).catch(() => {});
+    };
+    this.pollRemote();
+    this._connectSSE = () => {
+      if (this._sse) { try { this._sse.close(); } catch (e) {} }
+      try {
+        this._sse = new EventSource('https://ntfy.sh/' + NTFY_TOPIC + '/sse');
+        this._sse.onmessage = (evt) => {
+          try { const env = JSON.parse(evt.data); if (env.message) this._applyRemote(JSON.parse(env.message)); } catch (e) {}
+        };
+        this._sse.onerror = () => { try { this._sse.close(); } catch (e) {} };
+      } catch (e) {}
+    };
+    this._connectSSE();
+    // Mobile browsers suspend/kill SSE when the tab is backgrounded (screen lock, app switch),
+    // so poll on an interval too and force a fresh poll + reconnect whenever the page regains focus.
+    this._poll = setInterval(this.pollRemote, 8000);
+    this._onVisible = () => { if (!document.hidden) { this.pollRemote(); this._connectSSE(); } };
+    document.addEventListener('visibilitychange', this._onVisible);
+    window.addEventListener('focus', this._onVisible);
+  }
+
+  componentWillUnmount() {
+    if (typeof window === 'undefined') return;
+    window.removeEventListener('storage', this._onStorage);
+    window.removeEventListener('focus', this._onVisible);
+    document.removeEventListener('visibilitychange', this._onVisible);
+    clearInterval(this._poll);
+    if (this._sse) this._sse.close();
+  }
+
+  publishState = (partial) => {
+    const snap = {
+      evidenceCount: this.state.evidenceCount, revealEnabled: this.state.revealEnabled,
+      summaryText: this.state.summaryText, ...partial
+    };
+    if (typeof fetch === 'undefined') return;
+    fetch(NTFY_URL, { method: 'POST', body: JSON.stringify(snap) }).catch(() => {});
+  };
+
+  refresh = () => {
+    this.setState({ refreshing: true });
+    if (typeof window !== 'undefined') this.pollRemote();
+    setTimeout(() => this.setState({ refreshing: false }), 500);
+  };
+
+  enterSite = () => {
+    this.setState({ entered: true });
+    if (typeof window !== 'undefined') sessionStorage.setItem('hop_entered', '1');
+  };
+
+  releaseEvidence = () => {
+    const n = Math.min(EVIDENCE.length, this.state.evidenceCount + 1);
+    this.setState({ evidenceCount: n });
+    if (typeof window !== 'undefined') localStorage.setItem('hop_evidence', String(n));
+    this.publishState({ evidenceCount: n });
+  };
+
+  retractEvidence = () => {
+    const n = Math.max(0, this.state.evidenceCount - 1);
+    this.setState({ evidenceCount: n });
+    if (typeof window !== 'undefined') localStorage.setItem('hop_evidence', String(n));
+    this.publishState({ evidenceCount: n });
+  };
+
+  toggleReveal = () => {
+    const next = !this.state.revealEnabled;
+    this.setState({ revealEnabled: next });
+    if (typeof window !== 'undefined') localStorage.setItem('hop_reveal_enabled', next ? '1' : '0');
+    this.publishState({ revealEnabled: next });
+  };
+
+  openReveal = () => this.setState({ revealedOpen: true });
+
+  onSummaryChange = (e) => {
+    const val = e.target.value;
+    this.setState({ summaryText: val });
+    if (typeof window !== 'undefined') localStorage.setItem('hop_summary_text', val);
+    clearTimeout(this._summaryDebounce);
+    this._summaryDebounce = setTimeout(() => this.publishState({ summaryText: val }), 800);
+  };
+
+  onVoteDraftChange = (e) => {
+    this.setState({ voteDraft: e.target.value });
+    if (typeof window !== 'undefined') localStorage.setItem('hop_vote_message_device', e.target.value);
+  };
+
+  sendVote = () => {
+    if (!this.state.voteDraft.trim()) return;
+    this.setState({ voteSent: true });
+    if (typeof window !== 'undefined') localStorage.setItem('hop_voted_device', '1');
+  };
+
+  toggleSummary = () => this.setState(s => ({ showSummary: !s.showSummary }));
+  openEvidence = (id) => {
+    this.setState({ activeEvidenceId: id, seenEvidence: this.state.evidenceCount });
+    if (typeof window !== 'undefined') localStorage.setItem('hop_seen_evidence_device', String(this.state.evidenceCount));
+  };
+  closeEvidence = () => this.setState({ activeEvidenceId: null });
+
+  updateSchedule = (key, value) => {
+    const schedule = { ...this.state.schedule, [key]: value };
+    this.setState({ schedule });
+    if (typeof window !== 'undefined') localStorage.setItem(SCHEDULE_KEY, JSON.stringify(schedule));
+  };
+
+  renderVals() {
+    const s = this.state;
+    const evidenceUnlockedList = EVIDENCE.slice(0, s.evidenceCount).map((ev, i) => ({
+      ...ev, kicker: 'Evidencia ' + ev.num, onOpen: () => this.openEvidence(ev.id),
+      isNew: i === s.evidenceCount - 1 && s.evidenceCount > s.seenEvidence
+    }));
+    const activeEvidence = s.activeEvidenceId ? (() => {
+      const ev = EVIDENCE.find(e => e.id === s.activeEvidenceId);
+      return ev ? { ...ev, kicker: 'Evidencia ' + ev.num } : null;
+    })() : null;
+
+    const guestLink = (typeof window !== 'undefined') ? window.location.origin + window.location.pathname : '';
+    const revealVariant = this.props.revealStyle || 'editorial';
+
+    return {
+      isHost: s.isHost, isGuest: !s.isHost, entered: s.entered, enterSite: this.enterSite,
+      guestName: s.guestName, guestRole: s.guestRole, guestDetail: s.guestDetail,
+      editionLabel: this.props.editionLabel || 'Vol. I — Edición Limitada',
+      refresh: this.refresh, refreshSpinStyle: s.refreshing ? { animation: 'hopSpin .6s linear infinite' } : {},
+      showSummary: s.showSummary, toggleSummary: this.toggleSummary, summaryText: s.summaryText,
+      evidenceCount: s.evidenceCount, evidenceUnlockedList,
+      activeEvidence, closeEvidence: this.closeEvidence,
+      voteDraft: s.voteDraft, onVoteDraftChange: this.onVoteDraftChange, voteDraftEmpty: !s.voteDraft.trim(),
+      voteSent: s.voteSent, sendVote: this.sendVote,
+      revealEnabled: s.revealEnabled, revealedOpen: s.revealedOpen, openReveal: this.openReveal, revealVariant,
+      maxEvidence: EVIDENCE.length, evidenceAtMax: s.evidenceCount >= EVIDENCE.length, evidenceAtMin: s.evidenceCount <= 0,
+      releaseEvidence: this.releaseEvidence, retractEvidence: this.retractEvidence,
+      revealBtnLabel: s.revealEnabled ? 'Deshabilitar revelación final' : 'Habilitar revelación final',
+      revealBtnBg: s.revealEnabled ? 'var(--color-accent)' : 'transparent',
+      revealBtnColor: s.revealEnabled ? 'var(--color-bg)' : 'var(--color-accent)',
+      onSummaryChange: this.onSummaryChange,
+      schedule: s.schedule,
+      scheduleHandlers: {
+        start: (e) => this.updateSchedule('start', e.target.value),
+        t1: (e) => this.updateSchedule('t1', e.target.value),
+        t2: (e) => this.updateSchedule('t2', e.target.value),
+        t3: (e) => this.updateSchedule('t3', e.target.value),
+        t4: (e) => this.updateSchedule('t4', e.target.value)
+      },
+      guestLink
+    };
+  }
+}
+
+</script>
+</body>
+</html>
