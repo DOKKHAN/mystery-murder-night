@@ -16,4 +16,7 @@ RUN npm run build
 
 EXPOSE 3000
 ENV PORT=3000
-ENV NODE_E
+ENV NODE_ENV=production
+
+# Al arrancar el contenedor: aplicar migraciones pendientes y levantar el server.
+CMD ["sh", "-c", "npx prisma migrate deploy && npm run start"]
