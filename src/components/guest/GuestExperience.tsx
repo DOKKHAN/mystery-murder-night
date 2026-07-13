@@ -10,50 +10,97 @@ type Clue = {
   order: number;
 };
 
+type Alert = {
+  id: string;
+  title: string;
+  content: string;
+  order: number;
+};
+
+type Suspect = {
+  id: string;
+  name: string;
+};
+
 type Props = {
+  guestSlug: string;
   guestName: string;
   roleName: string | null;
   publicDescription: string | null;
   secretInfo: string;
   sessionName: string;
   sessionSlug: string;
+  suspects: Suspect[];
+  initialVote: Suspect | null;
 };
 
 const POLL_INTERVAL_MS = 5000;
+const ENTERED_STORAGE_KEY = "mmn_entered";
 
 export function GuestExperience({
+  guestSlug,
   guestName,
   roleName,
   publicDescription,
   secretInfo,
   sessionName,
   sessionSlug,
+  suspects,
+  initialVote,
 }: Props) {
+  const [entered, setEntered] = useState(false);
+
   const [clues, setClues] = useState<Clue[]>([]);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const knownIdsRef = useRef<Set<string>>(new Set());
-  const [newestId, setNewestId] = useState<string | null>(null);
+  const knownClueIdsRef = useRef<Set<string>>(new Set());
+  const [newestClueId, setNewestClueId] = useState<string | null>(null);
 
-  const fetchClues = useCallback(async () => {
+  const [selectedSuspectId, setSelectedSuspectId] = useState<string | null>(null);
+  const [votedSuspect, setVotedSuspect] = useState<Suspect | null>(initialVote);
+  const [voting, setVoting] = useState(false);
+  const [voteError, setVoteError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.sessionStorage.getItem(ENTERED_STORAGE_KEY) === "1") {
+      setEntered(true);
+    }
+  }, []);
+
+  const handleEnter = () => {
+    setEntered(true);
+    window.sessionStorage.setItem(ENTERED_STORAGE_KEY, "1");
+  };
+
+  const fetchData = useCallback(async () => {
     try {
-      const res = await fetch(`/api/public/clues/${sessionSlug}`, {
-        cache: "no-store",
-      });
-      if (!res.ok) return;
-      const data = await res.json();
-      const nextClues: Clue[] = data.clues ?? [];
+      const [cluesRes, alertsRes] = await Promise.all([
+        fetch(`/api/public/clues/${sessionSlug}`, { cache: "no-store" }),
+        fetch(`/api/public/alerts/${sessionSlug}`, { cache: "no-store" }),
+      ]);
 
-      const newIds = nextClues
-        .map((c) => c.id)
-        .filter((id) => !knownIdsRef.current.has(id));
+      if (cluesRes.ok) {
+        const data = await cluesRes.json();
+        const nextClues: Clue[] = data.clues ?? [];
 
-      if (knownIdsRef.current.size > 0 && newIds.length > 0) {
-        setNewestId(newIds[newIds.length - 1]);
+        const newIds = nextClues
+          .map((c) => c.id)
+          .filter((id) => !knownClueIdsRef.current.has(id));
+
+        if (knownClueIdsRef.current.size > 0 && newIds.length > 0) {
+          setNewestClueId(newIds[newIds.length - 1]);
+        }
+
+        knownClueIdsRef.current = new Set(nextClues.map((c) => c.id));
+        setClues(nextClues);
       }
 
-      knownIdsRef.current = new Set(nextClues.map((c) => c.id));
-      setClues(nextClues);
+      if (alertsRes.ok) {
+        const data = await alertsRes.json();
+        setAlerts(data.alerts ?? []);
+      }
     } catch {
       // Falla silenciosa: se reintenta en el próximo ciclo de polling.
     } finally {
@@ -62,16 +109,63 @@ export function GuestExperience({
   }, [sessionSlug]);
 
   useEffect(() => {
-    fetchClues();
-    const interval = setInterval(fetchClues, POLL_INTERVAL_MS);
+    if (!entered) return;
+    fetchData();
+    const interval = setInterval(fetchData, POLL_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [fetchClues]);
+  }, [entered, fetchData]);
 
   const handleManualRefresh = async () => {
     setRefreshing(true);
-    await fetchClues();
+    await fetchData();
     window.setTimeout(() => setRefreshing(false), 500);
   };
+
+  const handleSubmitVote = async () => {
+    if (!selectedSuspectId) return;
+    setVoting(true);
+    setVoteError(null);
+
+    const res = await fetch("/api/public/votes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ guestSlug, suspectId: selectedSuspectId }),
+    });
+
+    const data = await res.json().catch(() => null);
+    setVoting(false);
+
+    if (!res.ok) {
+      setVoteError(data?.error ?? "No se pudo enviar tu sospecha");
+      return;
+    }
+
+    setVotedSuspect(data.suspect ?? suspects.find((s) => s.id === selectedSuspectId) ?? null);
+  };
+
+  if (!entered) {
+    return (
+      <div className="page">
+        <div className="bg-texture" aria-hidden="true" />
+        <main className="welcome-screen">
+          <span className="kicker">Top Secret</span>
+          <span className="stamp">CONFIDENCIAL</span>
+          <h1 className="display-title">
+            Bienvenida,
+            <br />
+            {guestName}
+          </h1>
+          <p className="welcome-subtext">
+            Tu perfil ya está listo en el expediente. Esta noche, nada es lo
+            que parece.
+          </p>
+          <button className="btn btn-primary" onClick={handleEnter} type="button">
+            Entrar al expediente
+          </button>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="page">
@@ -103,6 +197,16 @@ export function GuestExperience({
           </p>
         </section>
 
+        {alerts.map((alert) => (
+          <div key={alert.id} className="alert-strip">
+            <span className="stamp stamp-sm">ALERTA</span>
+            <div>
+              <p className="alert-strip-title">{alert.title}</p>
+              <p className="alert-strip-body">{alert.content}</p>
+            </div>
+          </div>
+        ))}
+
         <section className="clues-section">
           <span className="kicker">A medida que avanza la noche</span>
           <h2 className="section-title">Pistas del expediente</h2>
@@ -117,7 +221,7 @@ export function GuestExperience({
           <ul className="clue-list">
             {clues.map((clue, idx) => (
               <li key={clue.id} className="card blueprint elev-sm clue-card">
-                {clue.id === newestId && (
+                {clue.id === newestClueId && (
                   <span className="badge-new">Nueva</span>
                 )}
                 <div className="clue-thumb">
@@ -139,6 +243,52 @@ export function GuestExperience({
             ))}
           </ul>
         </section>
+
+        {suspects.length > 0 && (
+          <section className="card blueprint elev-md vote-section">
+            <h2 className="section-title">¿Quién lo hizo?</h2>
+
+            {votedSuspect ? (
+              <>
+                <span className="stamp stamp-sm">SOSPECHA REGISTRADA</span>
+                <p className="body-copy vote-result">
+                  Acusaste a <strong>{votedSuspect.name}</strong>.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="body-copy vote-intro">
+                  Elegí a quién sospechás. Una vez enviado, no se puede
+                  cambiar.
+                </p>
+                <div className="suspect-list">
+                  {suspects.map((suspect) => (
+                    <button
+                      key={suspect.id}
+                      type="button"
+                      className={`suspect-option${
+                        selectedSuspectId === suspect.id ? " selected" : ""
+                      }`}
+                      onClick={() => setSelectedSuspectId(suspect.id)}
+                      disabled={voting}
+                    >
+                      {suspect.name}
+                    </button>
+                  ))}
+                </div>
+                {voteError && <p className="form-error">{voteError}</p>}
+                <button
+                  className="btn btn-primary vote-submit"
+                  type="button"
+                  disabled={!selectedSuspectId || voting}
+                  onClick={handleSubmitVote}
+                >
+                  {voting ? "Enviando..." : "Yo sé quién lo mató"}
+                </button>
+              </>
+            )}
+          </section>
+        )}
       </main>
     </div>
   );

@@ -19,6 +19,8 @@ model GameSession {
 
   guests Guest[]
   clues  Clue[]
+  alerts Alert[]
+  votes  Vote[]
 
   @@map("game_sessions")
 }
@@ -43,6 +45,12 @@ model Guest {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  /// Votos que este invitado emitió (a quién acusó).
+  votesAsVoter Vote[] @relation("VoterVotes")
+
+  /// Votos que este invitado recibió (quién lo acusó).
+  votesAsSuspect Vote[] @relation("SuspectVotes")
 
   @@index([gameSessionId])
   @@map("guests")
@@ -75,4 +83,53 @@ model Clue {
 
   @@index([gameSessionId])
   @@map("clues")
+}
+
+enum AlertStatus {
+  HIDDEN
+  RELEASED
+}
+
+/// Alertas del expediente (ej: "Gerard nunca llegó"), liberadas por el host
+/// igual que las pistas pero mostradas como una tira aparte en el front.
+model Alert {
+  id            String      @id @default(cuid())
+  gameSessionId String
+  gameSession   GameSession @relation(fields: [gameSessionId], references: [id], onDelete: Cascade)
+
+  title   String
+  content String
+
+  /// Orden sugerido de liberación.
+  order Int @default(0)
+
+  status     AlertStatus @default(HIDDEN)
+  releasedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([gameSessionId])
+  @@map("alerts")
+}
+
+/// El voto de un invitado ("sospecho de X"). Un invitado solo puede votar
+/// una vez por partida (constraint única); para permitir que vuelva a
+/// votar hay que borrar su voto (ver "Reset total" en el backoffice).
+model Vote {
+  id            String      @id @default(cuid())
+  gameSessionId String
+  gameSession   GameSession @relation(fields: [gameSessionId], references: [id], onDelete: Cascade)
+
+  voterId String
+  voter   Guest  @relation("VoterVotes", fields: [voterId], references: [id], onDelete: Cascade)
+
+  suspectId String
+  suspect   Guest  @relation("SuspectVotes", fields: [suspectId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([gameSessionId, voterId])
+  @@index([gameSessionId])
+  @@map("votes")
 }

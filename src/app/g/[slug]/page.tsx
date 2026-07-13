@@ -18,14 +18,36 @@ export default async function GuestPage({
     notFound();
   }
 
+  const [suspects, myVote] = await Promise.all([
+    prisma.guest.findMany({
+      where: { gameSessionId: guest.gameSessionId, id: { not: guest.id } },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+    prisma.vote.findUnique({
+      where: {
+        gameSessionId_voterId: {
+          gameSessionId: guest.gameSessionId,
+          voterId: guest.id,
+        },
+      },
+      include: { suspect: { select: { id: true, name: true } } },
+    }),
+  ]);
+
   return (
     <GuestExperience
+      guestSlug={guest.slug}
       guestName={guest.name}
       roleName={guest.roleName}
       publicDescription={guest.publicDescription}
       secretInfo={guest.secretInfo}
       sessionName={guest.gameSession.name}
       sessionSlug={guest.gameSession.slug}
+      suspects={suspects}
+      initialVote={
+        myVote ? { id: myVote.suspect.id, name: myVote.suspect.name } : null
+      }
     />
   );
 }

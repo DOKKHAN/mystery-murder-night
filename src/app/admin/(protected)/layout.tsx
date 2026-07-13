@@ -13,7 +13,9 @@ export default function AdminProtectedLayout({
         <span className="admin-brand">Backoffice</span>
         <nav>
           <Link href="/admin">Pistas</Link>
+          <Link href="/admin/alerts">Alertas</Link>
           <Link href="/admin/guests">Invitados</Link>
+          <Link href="/admin/votes">Votación</Link>
         </nav>
         <LogoutButton />
       </header>
