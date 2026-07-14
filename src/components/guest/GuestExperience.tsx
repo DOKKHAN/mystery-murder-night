@@ -297,7 +297,10 @@ export function GuestExperience({
             <h1 className="display-title">{guestName}</h1>
             {roleName && <span className="tag">{roleName}</span>}
             {publicDescription && <p className="body-copy">{publicDescription}</p>}
-            <p className="secret-copy">{secretInfo}</p>
+            <div className="secret-box">
+              <span className="secret-label">Información secreta · solo vos</span>
+              <p className="secret-copy">{secretInfo}</p>
+            </div>
             <p className="footnote">
               Tu rol es confidencial. No lo compartas con nadie... todavía.
             </p>
