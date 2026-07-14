@@ -9,11 +9,18 @@ type Vote = {
   suspect: { id: string; name: string };
 };
 
+type Props = {
+  initialVotes: Vote[];
+  initialVotingEnabled: boolean;
+};
+
 const POLL_INTERVAL_MS = 5000;
 
-export function VoteList({ initialVotes }: { initialVotes: Vote[] }) {
+export function VoteList({ initialVotes, initialVotingEnabled }: Props) {
   const [votes, setVotes] = useState<Vote[]>(initialVotes);
   const [resetting, setResetting] = useState(false);
+  const [votingEnabled, setVotingEnabled] = useState(initialVotingEnabled);
+  const [toggling, setToggling] = useState(false);
 
   const fetchVotes = useCallback(async () => {
     try {
@@ -47,8 +54,45 @@ export function VoteList({ initialVotes }: { initialVotes: Vote[] }) {
     setResetting(false);
   };
 
+  const handleToggleVoting = async () => {
+    setToggling(true);
+    const res = await fetch("/api/votes/toggle", { method: "POST" });
+    if (res.ok) {
+      const data = await res.json();
+      setVotingEnabled(data.votingEnabled);
+    }
+    setToggling(false);
+  };
+
   return (
     <div>
+      <div className="card blueprint elev-sm admin-toggle-card">
+        <div>
+          <p className="body-copy">
+            {votingEnabled
+              ? "Los invitados YA VEN el cuadro \"¿Quién lo hizo?\" en su celular."
+              : "Los invitados todavía no ven el cuadro de votación."}
+          </p>
+          <span
+            className={`status-pill ${votingEnabled ? "is-released" : "is-hidden"}`}
+          >
+            {votingEnabled ? "Votación habilitada" : "Votación deshabilitada"}
+          </span>
+        </div>
+        <button
+          className={votingEnabled ? "btn btn-secondary" : "btn btn-primary"}
+          onClick={handleToggleVoting}
+          disabled={toggling}
+          type="button"
+        >
+          {toggling
+            ? "..."
+            : votingEnabled
+              ? "Deshabilitar votación"
+              : "Habilitar votación"}
+        </button>
+      </div>
+
       <div className="admin-page-header">
         <p className="muted">{votes.length} voto{votes.length === 1 ? "" : "s"} recibidos · se actualiza solo cada 5s</p>
         <button className="btn btn-danger" onClick={handleReset} disabled={resetting} type="button">

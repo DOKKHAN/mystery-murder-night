@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getActiveGameSession } from "@/lib/session";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const session = await getActiveGameSession();
   const alerts = await prisma.alert.findMany({

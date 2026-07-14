@@ -20,7 +20,8 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/api/guests") ||
     pathname.startsWith("/api/clues") ||
     pathname.startsWith("/api/alerts") ||
-    pathname.startsWith("/api/votes");
+    pathname.startsWith("/api/votes") ||
+    pathname.startsWith("/api/reveal");
 
   if (!isAdminPage && !isAdminApi) {
     return NextResponse.next();
@@ -56,5 +57,6 @@ export const config = {
     "/api/clues/:path*",
     "/api/alerts/:path*",
     "/api/votes/:path*",
+    "/api/reveal/:path*",
   ],
 };

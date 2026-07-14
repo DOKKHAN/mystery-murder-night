@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getActiveGameSession } from "@/lib/session";
 import { VoteList } from "@/components/admin/VoteList";
+import { RevealPanel } from "@/components/admin/RevealPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,21 @@ export default async function VotesPage() {
           voter: v.voter,
           suspect: v.suspect,
         }))}
+        initialVotingEnabled={session.votingEnabled}
+      />
+
+      <h2 className="section-title" style={{ marginTop: 32, fontSize: 20 }}>
+        Revelación final
+      </h2>
+      <RevealPanel
+        initialRevealEnabled={session.revealEnabled}
+        initialValues={{
+          revealTitle: session.revealTitle ?? "",
+          revealSubtitle: session.revealSubtitle ?? "",
+          revealBody: session.revealBody ?? "",
+          revealTagline: session.revealTagline ?? "",
+          revealImageUrl: session.revealImageUrl ?? "",
+        }}
       />
     </div>
   );

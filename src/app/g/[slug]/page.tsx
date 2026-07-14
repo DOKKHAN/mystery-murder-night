@@ -44,10 +44,19 @@ export default async function GuestPage({
       secretInfo={guest.secretInfo}
       sessionName={guest.gameSession.name}
       sessionSlug={guest.gameSession.slug}
+      initialVotingEnabled={guest.gameSession.votingEnabled}
       suspects={suspects}
       initialVote={
         myVote ? { id: myVote.suspect.id, name: myVote.suspect.name } : null
       }
+      initialRevealEnabled={guest.gameSession.revealEnabled}
+      initialRevealContent={{
+        title: guest.gameSession.revealTitle,
+        subtitle: guest.gameSession.revealSubtitle,
+        body: guest.gameSession.revealBody,
+        tagline: guest.gameSession.revealTagline,
+        imageUrl: guest.gameSession.revealImageUrl,
+      }}
     />
   );
 }

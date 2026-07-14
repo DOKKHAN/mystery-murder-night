@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { getActiveGameSession } from "@/lib/session";
 import { generateGuestSlug } from "@/lib/slug";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const session = await getActiveGameSession();
   const guests = await prisma.guest.findMany({

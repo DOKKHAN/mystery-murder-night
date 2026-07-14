@@ -99,3 +99,16 @@
 .admin-form {
   max-width: 520px;
 }
+
+.admin-toggle-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.admin-toggle-card .status-pill {
+  display: inline-block;
+  margin-top: 6px;
+}

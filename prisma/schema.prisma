@@ -14,6 +14,20 @@ model GameSession {
   name      String
   slug      String   @unique
   isActive  Boolean  @default(true)
+
+  /// Si está en true, los invitados ven el cuadro "¿Quién lo hizo?" en su
+  /// vista. Lo prende/apaga el host desde la pestaña Votación.
+  votingEnabled Boolean @default(false)
+
+  /// Si está en true, a los invitados les aparece el botón para ver la
+  /// revelación final. Contenido editable desde el backoffice.
+  revealEnabled  Boolean @default(false)
+  revealTitle    String?
+  revealSubtitle String?
+  revealBody     String?
+  revealTagline  String?
+  revealImageUrl String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
